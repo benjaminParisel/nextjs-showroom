@@ -1,16 +1,22 @@
 import { z } from 'zod';
+import { Session } from './BonitaSchema';
 
 export class BonitaHelper {
-  username: string;
-  password: string;
+  username: string = '';
+  password: string = '';
   cookie: string = '';
-  baseUrl: string = process.env.BONITA_URL || 'http://localhost:8080/bonita';
-  constructor(username: string, password: string) {
-    this.username = username;
-    this.password = password;
-    async () => {
-      await this.login();
-    };
+  baseUrl: string = '';
+  hasSessionActive: boolean = false;
+  bonitaToken: string = '';
+  bonitaSession: Session = {} as Session;
+  constructor(
+    username = process.env.BONITA_USERNAME,
+    password = process.env.BONITA_PASSWORD,
+    baseUrl = process.env.BONITA_URL
+  ) {
+    this.username = username as string;
+    this.password = password! as string;
+    this.baseUrl = baseUrl as string;
   }
 
   async login() {
@@ -20,7 +26,7 @@ export class BonitaHelper {
     urlencoded.append('redirect', 'false');
 
     try {
-      return await fetch(`${this.baseUrl}/loginservice`, {
+      let loginResponse = await fetch(`${this.baseUrl}/loginservice`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -28,9 +34,14 @@ export class BonitaHelper {
         body: urlencoded,
         credentials: 'include', // Manage automatically cookies and other credentials in the response
       });
+
+      if (loginResponse.ok) {
+        this.hasSessionActive = true;
+        const getAuthToken = await this.getSession();
+      }
     } catch (error) {
       console.log(error);
-      throw Error();
+      //throw Error();
     }
   }
 
@@ -57,7 +68,13 @@ export class BonitaHelper {
         credentials: 'include',
       }
     );
-    console.log('result', response);
-    return response;
+    if (!response.ok) {
+      this.hasSessionActive = false;
+      throw Error(response.statusText);
+    }
+    this.hasSessionActive = true;
+    this.bonitaToken = response.headers.get('x-bonita-api-token') as string;
+    this.bonitaSession = await response.json();
+    return this.bonitaSession;
   }
 }

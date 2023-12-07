@@ -39,3 +39,31 @@ export const ProcessSchema = z.array(
     actorinitiatorid: z.string(),
   })
 );
+
+export type Session = {
+  copyright: string;
+  is_guest_user: string;
+  branding_version: string;
+  branding_version_with_date: string;
+  user_id: string;
+  user_name: string;
+  session_id: string;
+  conf: string;
+  is_technical_user: string;
+  version: string;
+};
+
+export const SessionSchema = z.array(
+  z.object({
+    copyright: z.string(),
+    is_guest_user: z.string(),
+    branding_version: z.string(),
+    branding_version_with_date: z.string(),
+    user_id: z.string(),
+    user_name: z.string(),
+    session_id: z.string(),
+    conf: z.string(),
+    is_technical_user: z.string(),
+    version: z.string(),
+  })
+);
