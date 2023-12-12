@@ -4,13 +4,9 @@ export class BonitaHelper {
   username: string;
   password: string;
   cookie: string = '';
-  baseUrl: string = process.env.BONITA_URL || 'http://localhost:8080/bonita';
   constructor(username: string, password: string) {
     this.username = username;
     this.password = password;
-    async () => {
-      await this.login();
-    };
   }
 
   async login() {
@@ -20,13 +16,12 @@ export class BonitaHelper {
     urlencoded.append('redirect', 'false');
 
     try {
-      return await fetch(`${this.baseUrl}/loginservice`, {
+      return await fetch(`/bonita/loginservice`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: urlencoded,
-        credentials: 'include', // Manage automatically cookies and other credentials in the response
       });
     } catch (error) {
       console.log(error);
@@ -36,7 +31,7 @@ export class BonitaHelper {
 
   async getProcess() {
     try {
-      let processes = fetch(`${this.baseUrl}/API/bpm/process?p=0&c=10`, {
+      let processes = fetch(`/bonita/API/bpm/process?p=0&c=10`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -49,14 +44,11 @@ export class BonitaHelper {
   }
 
   async getSession() {
-    const response = await fetch(
-      `${this.baseUrl}/API/system/session/unusedId`,
-      {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-      }
-    );
+    const response = await fetch(`/bonita/API/system/session/unusedId`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    });
     console.log('result', response);
     return response;
   }
